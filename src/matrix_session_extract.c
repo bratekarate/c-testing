@@ -94,7 +94,6 @@ int main(int argc, char *argv[]) {
 
   /*print_bytes(hmac_sha256, 32);*/
 
-  /*printf("%d\n", i + 1 + 16 + 16 + 4 + 32); // should match byte size of input
-   * file*/
-
+  /*printf("%d\n",*/
+         /*i + 1 + 16 + 16 + 4 + 32); // should match byte size of input file*/
 }
