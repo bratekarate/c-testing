@@ -1,26 +1,14 @@
+#include <Python.h>
 #include <inttypes.h>
-#include <nettle/hmac.h>
+#include <locale.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-void print_bytes(char *bytes, int len) {
-  for (int i = 0; i < len; i++) {
-    printf("%c", bytes[i]);
-  }
-}
-
-void print_hex_bytes(char *bytes, int len) {
-  for (int i = 0; i < len; i++) {
-    printf("%02X", bytes[i]);
-  }
-}
-
-void print_uint8(u_int8_t *bytes, int len) {
-  for (int i = 0; i < len; i++) {
-    printf("%" PRIu8, bytes[i]);
-  }
-}
+void print_bytes(char *bytes, int len);
+void print_hex_bytes(char *bytes, int len);
+void print_uint8(u_int8_t *bytes, int len);
+const char *calc_aes_key(char *passphrase, int rounds, char *salt);
 
 int main(int argc, char *argv[]) {
 
@@ -59,15 +47,16 @@ int main(int argc, char *argv[]) {
       (rnd_arr[0] << 24) + (rnd_arr[1] << 16) + (rnd_arr[2] << 8) + rnd_arr[3];
 
   i = 0;
-  char *rest;
+  char *rest = malloc(0);
   char buf;
   while (!feof(fp)) {
     rest = realloc(rest, i + 1);
     rest[i] = fgetc(fp);
     i++; // TODO: why is i after loop the size of rest bytes + 1?
   }
-
   i--;
+
+  fclose(fp);
 
   char hmac_sha256[32];
   int j;
@@ -78,22 +67,51 @@ int main(int argc, char *argv[]) {
   int rest_size = i;
   i -= j;
 
-  /*printf("%c", format);*/
+  const char *aes_key = calc_aes_key(argv[2], rounds, salt);
 
-  /*print_bytes(salt, 16);*/
-  /*printf("\n");*/
-  /*print_hex_bytes(salt, 16);*/
-
-  /*print_bytes(vec, 16);*/
-
-  /*print_bytes(rnd_arr, 4);*/
-
-  /*printf("%d", rounds);*/
-
-  /*print_bytes(rest, rest_size - 32);*/
-
-  /*print_bytes(hmac_sha256, 32);*/
-
-  /*printf("%d\n",*/
-         /*i + 1 + 16 + 16 + 4 + 32); // should match byte size of input file*/
+  printf("%s\n", aes_key);
 }
+
+// Extract AES-256-CTR key with embedded python
+const char *calc_aes_key(char *passphrase, int rounds, char *salt) {
+  Py_Initialize();
+  PyObject *moduleMainString = PyUnicode_FromString("__main__");
+  PyObject *moduleMain = PyImport_Import(moduleMainString);
+
+  PyRun_SimpleString("import sys\nimport pbkdf2\n"
+                     "from Crypto.Hash import SHA512\n"
+                     "from Crypto.Hash import HMAC\n\n"
+                     "def calc_key(passphrase, iterations, salt):\n"
+                     "    key = pbkdf2.PBKDF2(passphrase, salt, iterations, "
+                     "SHA512, HMAC).hexread(64)\n"
+                     "    return key\n");
+
+  PyObject *func = PyObject_GetAttrString(moduleMain, "calc_key");
+  PyObject *args =
+      PyTuple_Pack(3, PyUnicode_FromString(passphrase), PyLong_FromLong(rounds),
+                   PyBytes_FromString(salt));
+
+  PyObject *result = PyObject_CallObject(func, args);
+  Py_Finalize();
+
+  return PyUnicode_AsUTF8(result);
+}
+
+void print_bytes(char *bytes, int len) {
+  for (int i = 0; i < len; i++) {
+    printf("%c", bytes[i]);
+  }
+}
+
+void print_hex_bytes(char *bytes, int len) {
+  for (int i = 0; i < len; i++) {
+    printf("%02X", bytes[i]);
+  }
+}
+
+void print_uint8(u_int8_t *bytes, int len) {
+  for (int i = 0; i < len; i++) {
+    printf("%" PRIu8, bytes[i]);
+  }
+}
+
