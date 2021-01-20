@@ -6,7 +6,8 @@ inotifywait -m -e modify --include '.*\.c' --format '%w%f' "${1:-./src}" |
     tcc -o "$OUT" \
       $(pkg-config --libs --cflags nettle) \
       $(pkg-config --libs --cflags olm) \
-      $(pkg-config --libs --cflags python3) -lpython3.9 \
+      $(pkg-config --libs --cflags python3) -lpython3 \
+      $(pkg-config --libs --cflags openssl) \
       "$F"
     #"$OUT"
     #printf 'Exit code: %s\n\n' $?

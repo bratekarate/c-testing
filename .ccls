@@ -5,3 +5,4 @@ clang
 -I/usr/include/python3.9
 -lnettle
 -lolm
+-lssl -lcrypto
