@@ -1,69 +1,61 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <glib.h>
 
 struct Node {
+  const int item;
+  struct Node *prev;
   struct Node *next;
-  int value;
 };
 
-void printList(struct Node *iter) {
+struct LinkedList {
+  struct Node *fst;
+  struct Node *lst;
+  size_t size;
+};
 
-  do {
-    printf("%d\n", iter->value);
-    iter = iter->next;
-  } while (iter != NULL);
-}
+void add(struct LinkedList *list, struct Node *addable, const int item) {
+  addable = &(struct Node){ .prev = NULL, .next = NULL, .item = item };
+  struct Node *l = malloc(sizeof(struct Node));
+  l = list->lst;
 
-struct Node *Node(int i) {
-  struct Node *head = (struct Node *)malloc(sizeof(struct Node));
-  head->value = i;
-  head->next = NULL;
-  return head;
-}
 
-void prepend(struct Node **node, int i) {
-  struct Node *new_node = Node(i);
-  new_node->next = *node;
-  *node = new_node;
-}
+  list->lst = addable;
 
-void append(struct Node **node, int i) {
-  struct Node *new_node = Node(i);
-  
-  struct Node *head_node = *node;
-
-  while (head_node->next != NULL) {
-      head_node = head_node-> next;
+  if (l == NULL) {
+    printf("lst is null.\n");
+    list->fst = addable;
+  } else {
+    printf("last is not null.\n");
+    l->next = addable;
   }
+  list->size++;
+  printf("%d\n", list->fst->item);
+}
 
-  head_node->next = new_node;
+void printEach(struct LinkedList *list) {
+    struct Node *node = list -> fst;
+    // do {
+    //     printf("%d\n", node -> item);
+    //     node = node -> next;
+    // } while (node != NULL);
+    for (size_t i = 0; i < 10; i++) {
+        printf("%d\n", node -> item);
+        node = node -> next;        
+    }
 }
 
 int main() {
-    struct GHashTable* hash = g_hash_table_new(g_str_hash, g_str_equal);
-  /*struct Node *head = NULL;*/
-  /*struct Node *ele1 = NULL;*/
-  /*struct Node *tail = NULL;*/
+    struct LinkedList *list = malloc(sizeof(struct Node));
+    list = &(struct LinkedList){ .fst = NULL, .lst = NULL, .size = 0 };
 
-  /*head = (struct Node *)malloc(sizeof(struct Node));*/
-  /*ele1 = (struct Node *)malloc(sizeof(struct Node));*/
-  /*tail = (struct Node *)malloc(sizeof(struct Node));*/
+    struct Node *ele = malloc(sizeof(struct Node));
+    struct Node *ele2 = malloc(sizeof(struct Node));
+    struct Node *ele3 = malloc(sizeof(struct Node));
 
-  /*head->value = 1;*/
-  /*head->next = ele1;*/
-
-  /*ele1->value = 2;*/
-  /*ele1->next = tail;*/
-
-  /*tail->value = 3;*/
-  /*tail->next = NULL;*/
-
-  struct Node *head = Node(1);
-  prepend(&head, 2);
-  prepend(&head, 3);
-  append(&head, 10);
-
-  printList(head);
-  printf("\nhead is %d\n", head->value);
+    add(list, ele, 256);    
+    add(list, ele2, 124);
+    // add(list, ele3, -245);
+    
+    // printf("%d\n", list -> fst -> item);
+    // printEach(list);
 }
