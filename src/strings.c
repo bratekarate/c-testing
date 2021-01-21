@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #define ALPHA_MIN (65)
 #define ALPHA_MAX (122)
@@ -17,6 +18,7 @@ void realloc_each_cat() {
   size_t str_size = 1;
   char *str = malloc(1 * sizeof(char));
 
+  srand(time(NULL));
   for (size_t i = 0; i < STRING_COUNT; i++) {
     const size_t chr_size = (rand() % 100) + 1;
     char add_char[chr_size];
@@ -34,19 +36,24 @@ void realloc_each_cat() {
   printf("str len:\t%lu\n", strlen(str));
   printf("str size:\t%lu\n", str_size);
 
-  printf("fst: %c\tlst: %c\n", str[str_size - 2], str[0]);
-
   char *hex_str = malloc(str_size * 2);
   to_hex_str(hex_str, str, str_size);
-
-  free(str);
-  str = NULL;
 
   char *parse = malloc(str_size);
   from_hex_str(parse, hex_str, str_size * 2);
 
+  printf("%s\n\n", hex_str);
+
   free(hex_str);
   hex_str = NULL;
+
+  printf("%s\n\n", str);
+  printf("%s\n\n", parse);
+
+  printf("fst: %c\tlst: %c\n", str[str_size - 2], str[0]);
+
+  free(str);
+  str = NULL;
 
   printf("fst: %c\tlst: %c\n", parse[str_size - 2], parse[0]);
 
@@ -63,15 +70,9 @@ void to_hex_str(char *out, const char *str, const size_t str_size) {
 }
 
 void from_hex_str(char *out, const char *hex_str, const size_t str_size) {
-  // If out was used directly, out must be large enough to hold at least
-  // str_size * sizeof(long) / 2 bytes. Apparently this can be mitigated
-  // by putting the tmp array on the stack first. Should check in an isolated test.
-  char tmp[str_size];
-  for (size_t i = 0; i < str_size * 2; i = i + 2) {
+  for (size_t i = 0; i < str_size; i = i + 2) {
     char *ptr = NULL;
     char chrs[] = {hex_str[i], hex_str[i + 1]};
-    tmp[i / 2] = (char) strtol(chrs, &ptr, 16);
+    out[i / 2] = (char) strtol(chrs, &ptr, 16);
   }
-
-  memcpy(out, tmp, str_size/2);
 }
