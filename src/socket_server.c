@@ -52,7 +52,6 @@ int main() {
       continue;
     }
 
-    // TODO: some issue with buffer
     while (1) {
         memset(buf, '\0', BUFSIZE);
       // read message
