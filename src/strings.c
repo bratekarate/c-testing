@@ -1,8 +1,8 @@
-#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
+// #include <sys/time.h>
+// #include <time.h>
 
 #define ALPHA_MIN (65)
 #define ALPHA_MAX (122)
@@ -18,7 +18,19 @@ void realloc_each_cat() {
   size_t str_size = 1;
   char *str = malloc(1 * sizeof(char));
 
-  srand(time(NULL));
+  // Generate random seed from
+  FILE *fp = fopen("/dev/random", "r");
+  unsigned int seed;
+  fread(&seed, sizeof(unsigned int), 1, fp);
+  srand(seed);
+
+  // Use a seed that changes more than once a second
+  // struct timeval time;
+  // gettimeofday(&time, NULL);
+  // srand((time.tv_sec * 1000) + (time.tv_usec / 1000));
+
+  // Use a seed that changes every second
+  // srand(time(NULL));
   for (size_t i = 0; i < STRING_COUNT; i++) {
     const size_t chr_size = (rand() % 100) + 1;
     char add_char[chr_size];
@@ -63,7 +75,7 @@ void realloc_each_cat() {
 
 void to_hex_str(char *out, const char *str, const size_t str_size) {
   for (size_t i = 0; i < str_size; i++) {
-      char hex_buf[3];
+    char hex_buf[3];
     sprintf(hex_buf, "%02x", str[i]);
     strcat(out, hex_buf);
   }
@@ -73,6 +85,6 @@ void from_hex_str(char *out, const char *hex_str, const size_t str_size) {
   for (size_t i = 0; i < str_size; i = i + 2) {
     char *ptr = NULL;
     char chrs[] = {hex_str[i], hex_str[i + 1]};
-    out[i / 2] = (char) strtol(chrs, &ptr, 16);
+    out[i / 2] = strtol(chrs, &ptr, 16);
   }
 }
