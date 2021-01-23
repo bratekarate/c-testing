@@ -6,9 +6,6 @@
 #include <sys/un.h>
 #include <unistd.h>
 
-#define SOCKET_PATH "/tmp/mysock.uds"
-#define BUFSIZE 1000
-
 int main() {
 
   // create socket
@@ -22,11 +19,12 @@ int main() {
   struct sockaddr_un addr;
   memset(&addr, '\0', sizeof(struct sockaddr_un));
   addr.sun_family = AF_UNIX;
-  strncpy(addr.sun_path, SOCKET_PATH, sizeof(addr.sun_path));
+  strncpy(addr.sun_path, "/tmp/mysock", sizeof(addr.sun_path));
   socklen_t socklen = sizeof(struct sockaddr_un);
 
+  // TODO: remove old socket file on error
   // bind socket
-  unlink(SOCKET_PATH);
+  unlink("/tmp/mysock");
   int bind_res;
   if ((bind_res = bind(socket_fd, (struct sockaddr *)&addr, socklen)) != 0) {
     perror("bind failed");
@@ -40,36 +38,29 @@ int main() {
     exit(EXIT_FAILURE);
   }
 
+#define BUFSIZE 1000
   char *buf = malloc(BUFSIZE * sizeof(char));
 
   // listen to connections forever
   while (1) {
+    memset(buf, '\0', BUFSIZE);
 
     // accept connection
     int acc_res;
     if ((acc_res = accept(socket_fd, (struct sockaddr *)&addr, &socklen)) < 1) {
       perror("accept failed");
-      continue;
+      exit(EXIT_FAILURE);
     }
 
-    // TODO: some issue with buffer
-    while (1) {
-        memset(buf, '\0', BUFSIZE);
-      // read message
-      int read_res;
-      if ((read_res = read(acc_res, buf, BUFSIZE)) < 1) {
-        if (read_res == 0) {
-          fprintf(stderr, "EOF detected.\n");
-        } else {
-          printf("%d\n", read_res);
-          perror("read failed");
-        }
-        break;
-      }
-
-      printf("%s", buf);
+    // read message
+    int read_res;
+    if ((read_res = read(acc_res, buf, BUFSIZE)) != 0) {
+      printf("%d\n", read_res);
+      perror("read failed");
+      exit(EXIT_FAILURE);
     }
+
+    printf("%s\n", buf);
   }
-
   free(buf);
 }
