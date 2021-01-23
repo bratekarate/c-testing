@@ -1,69 +1,105 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <glib.h>
+#include <string.h>
 
-struct Node {
+#define NODE_SIZE sizeof(Node)
+#define LINKED_LIST_SIZE sizeof(LinkedList)
+
+typedef struct Node Node;
+typedef struct LinkedList LinkedList;
+
+// High level functions
+LinkedList *new_list();
+void add(LinkedList *list, const int item);
+void print_nodes(Node *node);
+void free_list(Node *node);
+
+// Low level functions
+void init_list(LinkedList **list);
+void init_node_p(Node **node, const int item);
+void add_node(LinkedList *list, Node **node, const int item);
+
+typedef struct Node {
+  const int item;
+  struct Node *prev;
   struct Node *next;
-  int value;
-};
+} Node;
 
-void printList(struct Node *iter) {
-
-  do {
-    printf("%d\n", iter->value);
-    iter = iter->next;
-  } while (iter != NULL);
-}
-
-struct Node *Node(int i) {
-  struct Node *head = (struct Node *)malloc(sizeof(struct Node));
-  head->value = i;
-  head->next = NULL;
-  return head;
-}
-
-void prepend(struct Node **node, int i) {
-  struct Node *new_node = Node(i);
-  new_node->next = *node;
-  *node = new_node;
-}
-
-void append(struct Node **node, int i) {
-  struct Node *new_node = Node(i);
-  
-  struct Node *head_node = *node;
-
-  while (head_node->next != NULL) {
-      head_node = head_node-> next;
-  }
-
-  head_node->next = new_node;
-}
+typedef struct LinkedList {
+  Node *fst;
+  Node *lst;
+  int size;
+} LinkedList;
 
 int main() {
-    struct GHashTable* hash = g_hash_table_new(g_str_hash, g_str_equal);
-  /*struct Node *head = NULL;*/
-  /*struct Node *ele1 = NULL;*/
-  /*struct Node *tail = NULL;*/
+  LinkedList *list = new_list();
 
-  /*head = (struct Node *)malloc(sizeof(struct Node));*/
-  /*ele1 = (struct Node *)malloc(sizeof(struct Node));*/
-  /*tail = (struct Node *)malloc(sizeof(struct Node));*/
+  add(list, 12);
+  add(list, 23);
+  add(list, 63);
+  add(list, 9324);
 
-  /*head->value = 1;*/
-  /*head->next = ele1;*/
+  print_nodes(list->fst);
 
-  /*ele1->value = 2;*/
-  /*ele1->next = tail;*/
+  free_list(list->fst);
+  free(list);
+  list = NULL;
 
-  /*tail->value = 3;*/
-  /*tail->next = NULL;*/
-
-  struct Node *head = Node(1);
-  prepend(&head, 2);
-  prepend(&head, 3);
-  append(&head, 10);
-
-  printList(head);
-  printf("\nhead is %d\n", head->value);
+  return EXIT_SUCCESS;
 }
+
+LinkedList *new_list() {
+  LinkedList *list = malloc(LINKED_LIST_SIZE);
+  init_list(&list);
+  return list;
+}
+
+void add(LinkedList *list, const int item) {
+  Node *node = malloc(NODE_SIZE);
+  /*printf("Create node %p\n", node);*/
+  add_node(list, &node, item);
+}
+
+void free_list(Node *node) {
+  if (node == NULL) {
+    return;
+  }
+  free_list(node->next);
+  /*printf("Free node %p\n", node);*/
+  free(node);
+  node = NULL;
+}
+
+void print_nodes(Node *node) {
+  if (node == NULL) {
+    return;
+  }
+  printf("%d\n", node->item);
+  print_nodes(node->next);
+}
+
+void init_list(LinkedList **list) {
+  LinkedList l = {.fst = NULL, .lst = NULL};
+  **list = l;
+}
+
+void init_node_p(Node **node, const int item) {
+  Node n = {.item = item, .next = NULL, .prev = NULL};
+  memcpy(*node, &n, NODE_SIZE);
+}
+
+void add_node(LinkedList *list, Node **node, const int item) {
+  init_node_p(node, item);
+
+  Node *l = list->lst;
+
+  list->lst = *node;
+
+  if (l == NULL) {
+    list->fst = *node;
+  } else {
+    l->next = *node;
+  }
+  list->size++;
+}
+
