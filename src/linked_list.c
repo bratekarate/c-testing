@@ -103,6 +103,7 @@ int list_get(LinkedList *list, const size_t index){
 }
 
 // TODO: handle index out of bounds
+// TODO: use logic except freeing memory to subfunction
 int list_remove(LinkedList *list, const size_t index){
     Node *cur = list -> fst;
     for(size_t i = 0; i < index; i++) {
