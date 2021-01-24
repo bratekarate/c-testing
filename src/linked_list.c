@@ -11,13 +11,17 @@ typedef struct LinkedList LinkedList;
 // High level functions
 LinkedList *new_list();
 void add(LinkedList *list, const int item);
-void print_nodes(Node *node);
-void free_list(Node *node);
+void free_list(LinkedList *list);
+void print_list(LinkedList *list);
 
 // Low level functions
 void init_list(LinkedList **list);
 void init_node_p(Node **node, const int item);
 void add_node(LinkedList *list, Node **node, const int item);
+void print_nodes_rec_broken(Node *node);
+void print_nodes(Node *node);
+void free_nodes(Node *node);
+void free_nodes_rec_broken(Node *node);
 
 typedef struct Node {
   const int item;
@@ -34,15 +38,13 @@ typedef struct LinkedList {
 int main() {
   LinkedList *list = new_list();
 
-  add(list, 12);
-  add(list, 23);
-  add(list, 63);
-  add(list, 9324);
+  for(int i = 0; i < 1000000; i++) {
+      add(list, i);
+  }
 
-  print_nodes(list->fst);
+  print_list(list);
 
-  free_list(list->fst);
-  free(list);
+  free_list(list);
   list = NULL;
 
   return EXIT_SUCCESS;
@@ -60,22 +62,49 @@ void add(LinkedList *list, const int item) {
   add_node(list, &node, item);
 }
 
-void free_list(Node *node) {
+// TODO: how to set null
+void free_list(LinkedList *list) {
+    free_nodes(list->lst);
+    free(list);
+}
+
+// TODO: how to set null
+void free_nodes(Node *node) {
+    while(node != NULL) {
+        Node *prev = node->prev;
+        /*printf("Free node %p\n", node);*/
+        free(node);
+        node = prev;
+    }
+}
+
+void free_nodes_rec_broken(Node *node) {
   if (node == NULL) {
     return;
   }
-  free_list(node->next);
+  free_nodes_rec_broken(node->next);
   /*printf("Free node %p\n", node);*/
   free(node);
   node = NULL;
 }
 
+void print_list(LinkedList *list) {
+    print_nodes(list->fst);    
+}
+
 void print_nodes(Node *node) {
+    while (node != NULL) {
+        printf("%d\n", node->item);
+        node = node -> next;
+    }
+}
+
+void print_nodes_rec_broken(Node *node) {
   if (node == NULL) {
     return;
   }
   printf("%d\n", node->item);
-  print_nodes(node->next);
+  print_nodes_rec_broken(node->next);
 }
 
 void init_list(LinkedList **list) {
@@ -99,6 +128,7 @@ void add_node(LinkedList *list, Node **node, const int item) {
     list->fst = *node;
   } else {
     l->next = *node;
+    (*node)->prev = l;
   }
   list->size++;
 }
