@@ -18,19 +18,20 @@ void realloc_each_cat() {
   size_t str_size = 1;
   char *str = malloc(1 * sizeof(char));
 
-  // Generate random seed from
-  FILE *fp = fopen("/dev/random", "r");
+  // Option 1: Generate random seed from /dev/urandom
+  FILE *fp = fopen("/dev/urandom", "r");
   unsigned int seed;
   fread(&seed, sizeof(unsigned int), 1, fp);
   srand(seed);
 
-  // Use a seed that changes more than once a second
+  // Option 2: Use a seed that changes more than once a second
   // struct timeval time;
   // gettimeofday(&time, NULL);
   // srand((time.tv_sec * 1000) + (time.tv_usec / 1000));
 
-  // Use a seed that changes every second
+  // Option 3: Use a seed that changes every second
   // srand(time(NULL));
+
   for (size_t i = 0; i < STRING_COUNT; i++) {
     const size_t chr_size = (rand() % 100) + 1;
     char add_char[chr_size];
