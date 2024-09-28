@@ -24,7 +24,8 @@ watch:
 			--format '%w%f' \
 			"$(SRCDIR)"); \
 		export NAME=$$(basename "$${NAME%%.c}"); \
-		($(MAKE)); \
+		($(MAKE)) \
+		&& "$(OUTDIR)/$$NAME"; \
 	done
 
 
