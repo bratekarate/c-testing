@@ -5,6 +5,8 @@
 
 int digits(int n);
 
+/* NOLINTBEGIN(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+
 int main() {
   char *str = "Hello, World %d!";
   int no = 123;
@@ -13,6 +15,8 @@ int main() {
   snprintf(out, l, str, no);
   fprintf(stderr, "Some error.\n");
   fprintf(stdout, "%s\n", out);
+  free(out);
+  out = NULL;
 }
 
 int digits(int n) {
@@ -23,3 +27,5 @@ int digits(int n) {
   }
   return c;
 }
+
+/* NOLINTEND(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
