@@ -37,3 +37,4 @@ clang
 -lgdk_pixbuf-2.0
 -lgio-2.0
 -lgobject-2.0
+-lcurl
